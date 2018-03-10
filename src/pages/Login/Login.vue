@@ -9,7 +9,7 @@
         </div>
       </div>
       <div class="login_content">
-        <form>
+        <form @submit.prevent="login">
           <div :class="{on:loginWay}">
             <section class="login_message">
               <input type="text" maxlength="11" placeholder="手机号" v-model="phone" >
@@ -28,7 +28,7 @@
           <div :class="{on:!loginWay}" >
             <section>
               <section class="login_message">
-                <input type="tel" maxlength="11" placeholder="手机/邮箱/用户名">
+                <input type="tel" maxlength="11" placeholder="手机/邮箱/用户名" v-model="name">
               </section>
               <section class="login_verification">
                 <input type="text" maxlength="8" placeholder="密码"
@@ -41,13 +41,13 @@
                 </div>
               </section>
               <section class="login_message">
-                <input type="text" maxlength="11" placeholder="验证码">
+                <input type="text" maxlength="11" placeholder="验证码" v-model="captcha">
                 <img class="get_verification" src="http://localhost:3000/captcha"
                      alt="captcha" @click="changeCatcha">
               </section>
             </section>
           </div>
-          <button class="login_submit">登录</button>
+          <input class="login_submit" type="submit" value="登录"/>
         </form>
         <a href="javascript:;" class="about_us">关于我们</a>
       </div>
@@ -55,47 +55,114 @@
         <i class="iconfont icon-jiantou2"></i>
       </span>
     </div>
+    <alert-tip v-if="alertShow" :alertText="alertText" @closeTip="closeTip"/>
   </div>
 </template>
 <script>
-    export default {
-      data(){
-        return{
-          loginWay:false,
-          phone:'',
-          computeTime: '',
-          showPassword:false,
-          pwd:''
-        }
-      },
-      computed:{
-        rightPhone(){
-          return /^1\d{10}$/.test(this.phone)
-        }
-      },
-      methods:{
-        handleLoginWay(loginWay){
-          this.loginWay = loginWay
-        },
-        getCode(){
-          if(this.rightPhone){
-            this.computeTime = 60
-            const IntervalId = setInterval(()=>{
-              this.computeTime --
-              if(this.computeTime===0){
-                clearInterval(IntervalId)
-              }
-            },1000)
-          }
-        },
-        switchShowPassword(){
-          this.showPassword = !this.showPassword
-        },
-        changeCatcha(event){
-          event.target.src='http://localhost:3000/captcha?time'+ new Date()
-        }
+  import {sendCode, smsLogin, loginPwd} from '../../api'
+  import AlertTip from '../../components/AlertTip/Alert'
+  export default {
+    data(){
+      return{
+        loginWay:true,
+        phone:'',
+        code:'',
+        name:'',
+        pwd:'',
+        captcha:'',
+        computeTime: '',
+        showPassword:false,
+
+        alertText:'',
+        alertShow:false
       }
+    },
+    computed:{
+      rightPhone(){
+        return /^1\d{10}$/.test(this.phone)
+      }
+    },
+    methods:{
+      handleLoginWay(loginWay){
+        this.loginWay = loginWay
+      },
+      async getCode(){
+        if(this.rightPhone){
+          this.computeTime = 60
+          const IntervalId = setInterval(()=>{
+            this.computeTime --
+            if(this.computeTime===0){
+              clearInterval(IntervalId)
+            }
+          },1000)
+          const result = await sendCode(this.phone)
+
+          if (result.code === 1){
+            clearInterval(IntervalId)
+            this.alertShow = true
+            this.alertText = result.msg
+
+          }
+        }
+      },
+      switchShowPassword(){
+        this.showPassword = !this.showPassword
+      },
+      changeCatcha(event){
+        event.target.src='http://localhost:3000/captcha?time'+ new Date()
+      },
+      //登录
+      async login(){
+        let result
+        if(this.loginWay){
+          const {rightPhone,phone, code} =this
+          if (!rightPhone){
+            this.alertShow = true
+            this.alertText = '请输入要正确的手机号'
+            return
+          }else if(!/^\d{6}$/.test(code)){
+            this.alertShow = false
+            this.alertText = '请输入正确的验证码'
+            return
+          }
+          result = await smsLogin({phone,code})
+        }else {
+          const {name,pwd, captcha} =this
+          if (!name){
+            this.alertShow = true
+            this.alertText = '请输入用户名'
+            return
+          }else if(!pwd){
+            this.alertShow = false
+            this.alertText = '请输入正确的密码'
+            return
+          }else if(!captcha){
+            this.alertShow = false
+            this.alertText = '请输入正确的验证码'
+            return
+          }
+          result = await loginPwd({name,pwd,captcha})
+        }
+
+        if (result.code === 0){
+          const userInfo = result.data
+          this.$store.dispatch('recordUserInfo',userInfo)
+          this.$router.back()
+        }else{
+          this.alertShow = false
+          this.alertText = result.msg
+        }
+        alert('dddd')
+      },
+      closeTip(){
+        this.alertShow = false
+      }
+    },
+
+    components:{
+      AlertTip
     }
+  }
 </script>
 <style lang="stylus" rel="stylesheet/stylus">
   @import "../../common/stylus/mixin.styl"
