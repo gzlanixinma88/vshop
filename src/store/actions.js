@@ -3,14 +3,23 @@ import {
   reqAddress,
   reqShops,
   reqFoodTypes,
-  reqUser
+  reqUser,
+  reqGoods,
+  reqRatings,
+  reqInfo
 } from '../api/index'
 
 import {
   RECEIVE_ADDRESS,
   RECEIVE_SHOPS,
   RECEIVE_TYPES,
-  RECEIVE_USER_INFO
+  RECEIVE_USER_INFO,
+  RECEIVE_GOODS,
+  RECEIVE_INFO,
+  RECEIVE_RATINGS,
+  DECREMENT_FOOD_COUNT,
+  INCREMENT_FOOD_COUNT,
+  CLEAR_CART
 } from './mutation-types'
 export default {
   async getAddress({commit,state}){
@@ -36,5 +45,37 @@ export default {
     if(result.code === 0){
       commit(RECEIVE_USER_INFO,{userInfo:result.data})
     }
+  },
+  async getShopInfo ({commit}){
+    const result = await reqInfo()
+    if(result.code === 0){
+      commit(RECEIVE_INFO,{info:result.info})
+    }
+  },
+
+  async getShopRatings ({commit}){
+    const result = await reqRatings()
+    if(result.code === 0){
+      commit(RECEIVE_RATINGS,{ratings:result.ratings})
+    }
+  },
+
+  async getShopGoods ({commit},callback){
+    const result = await reqGoods()
+    if(result.code === 0){
+      commit(RECEIVE_GOODS,{goods:result.goods})
+      callback && callback()
+    }
+  },
+
+  updateFoodCount({commit},{food,isAdd}){
+    if(isAdd){
+      commit(INCREMENT_FOOD_COUNT,{food})
+    }else{
+      commit(DECREMENT_FOOD_COUNT,{food})
+    }
+  },
+  clearCart({commit}){
+    commit(CLEAR_CART)
   }
 }

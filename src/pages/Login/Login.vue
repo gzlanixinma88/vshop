@@ -13,12 +13,12 @@
           <div :class="{on:loginWay}">
             <section class="login_message">
               <input type="text" maxlength="11" placeholder="手机号" v-model="phone" >
-              <button class="get_verification" @click="getCode" v-show="!computeTime"
+              <button class="get_verification" @click.prevent="getCode" v-show="!computeTime"
                       :class='{right_phone:rightPhone}'>获取验证码</button>
               <button disabled="disabled" class="get_verification" v-show="computeTime">{{computeTime}}s</button>
             </section>
             <section class="login_verification">
-              <input type="tel" maxlength="8" placeholder="验证码">
+              <input type="tel" maxlength="8" placeholder="验证码" v-model="code">
             </section>
             <section class="login_hint">
               温馨提示：未注册硅谷外卖帐号的手机号，登录时将自动注册，且代表已同意
@@ -43,7 +43,7 @@
               <section class="login_message">
                 <input type="text" maxlength="11" placeholder="验证码" v-model="captcha">
                 <img class="get_verification" src="http://localhost:3000/captcha"
-                     alt="captcha" @click="changeCatcha">
+                     alt="captcha" @click.prevent="changeCatpcha">
               </section>
             </section>
           </div>
@@ -72,7 +72,6 @@
         captcha:'',
         computeTime: '',
         showPassword:false,
-
         alertText:'',
         alertShow:false
       }
@@ -108,7 +107,7 @@
       switchShowPassword(){
         this.showPassword = !this.showPassword
       },
-      changeCatcha(event){
+      changeCatpcha(event){
         event.target.src='http://localhost:3000/captcha?time'+ new Date()
       },
       //登录
@@ -118,10 +117,10 @@
           const {rightPhone,phone, code} =this
           if (!rightPhone){
             this.alertShow = true
-            this.alertText = '请输入要正确的手机号'
+            this.alertText = '请输入正确的手机号'
             return
-          }else if(!/^\d{6}$/.test(code)){
-            this.alertShow = false
+          } else if(!/^\d{6}$/.test(code)) { // 验证码
+            this.alertShow = true
             this.alertText = '请输入正确的验证码'
             return
           }
@@ -133,11 +132,11 @@
             this.alertText = '请输入用户名'
             return
           }else if(!pwd){
-            this.alertShow = false
+            this.alertShow = true
             this.alertText = '请输入正确的密码'
             return
           }else if(!captcha){
-            this.alertShow = false
+            this.alertShow = true
             this.alertText = '请输入正确的验证码'
             return
           }
@@ -149,10 +148,9 @@
           this.$store.dispatch('recordUserInfo',userInfo)
           this.$router.back()
         }else{
-          this.alertShow = false
+          this.alertShow = true
           this.alertText = result.msg
         }
-        alert('dddd')
       },
       closeTip(){
         this.alertShow = false

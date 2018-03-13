@@ -19,17 +19,17 @@ export const reqShops = ({latitude, longitude}) =>ajax('/api/shops', {latitude, 
 
 /*获取一次性验证码*/
 
-export const reqCaptach =()=>ajax('/api/captcha')
+export const reqCaptcha =()=>ajax('/api/captcha')
 
 /*
 用户名密码登陆
 */
 
-export const loginPwd = ({name, pwd, captach}) =>ajax('/api/login_pwd',{name, pwd, captach},'POST')
+export const loginPwd = ({name, pwd, captcha}) =>ajax('/api/login_pwd',{name, pwd, captcha},'POST')
 
 /*发送短信验证码*/
 
-export const sendCode =(phone) => ajax('/api/sendcode',{phone})
+export const sendCode =(phone,code) => ajax('/api/sendcode',{phone,code})
 
 
 /*
@@ -42,3 +42,9 @@ export const smsLogin =({phone, code})=>ajax('/api/login_sms',{phone, code},'POS
 /*根据会话获取用户信息*/
 
 export const reqUser = () => ajax('/api/userinfo')
+
+export const reqGoods = () => ajax('/goods')
+
+export const reqRatings = () => ajax('/ratings')
+
+export const reqInfo = () => ajax('/info')

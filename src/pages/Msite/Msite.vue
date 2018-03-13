@@ -6,7 +6,8 @@
         <i class="iconfont icon-sousuo"></i>
       </span>
       <span class="header_login" slot="login">
-        <span class="header_login_text">登录|注册</span>
+        <router-link to="/login" class="header_login_text">
+          登录|注册</router-link>
       </span>
     </HeaderTop>
     <!--首页导航-->
@@ -67,7 +68,7 @@
       }
     },
     computed: {
-      ...mapState(['address', 'foodTypes']),
+      ...mapState(['address', 'foodTypes','userInfo']),
       foodTypesArr () {
         const arr = []  // 大数组
         const {foodTypes} = this
